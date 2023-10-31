@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
-const io = require('socket.io')(http);
+// const io = require('socket.io')(http);
 const bodyParser = require('body-parser');
 // Get the current date and time
 const currentDateTime = new Date();
@@ -42,39 +42,39 @@ app.use(bodyParser.json());
 const users = [];
 const messages = {};
 
-io.on('connection', (socket) => {
-  console.log(`User connected: ${socket.id}`);
+// io.on('connection', (socket) => {
+//   console.log(`User connected: ${socket.id}`);
 
-  // Send the list of users to the newly connected user.
-  socket.emit('users-changed', users);
+//   // Send the list of users to the newly connected user.
+//   socket.emit('users-changed', users);
 
-  // Receive new chat messages.
-  socket.on('new-chat-message', (message) => {
-    const { senderId, recipientId, text } = message;
-    if (!messages[recipientId]) {
-      messages[recipientId] = [];
-    }
-    messages[recipientId].push({ senderId, text });
+//   // Receive new chat messages.
+//   socket.on('new-chat-message', (message) => {
+//     const { senderId, recipientId, text } = message;
+//     if (!messages[recipientId]) {
+//       messages[recipientId] = [];
+//     }
+//     messages[recipientId].push({ senderId, text });
 
-    // Send the new message to the recipient if they are online.
-    const recipientSocket = io.sockets.sockets.get(recipientId);
-    if (recipientSocket) {
-      recipientSocket.emit('new-chat-message', { senderId, text });
-    }
-  });
+//     // Send the new message to the recipient if they are online.
+//     const recipientSocket = io.sockets.sockets.get(recipientId);
+//     if (recipientSocket) {
+//       recipientSocket.emit('new-chat-message', { senderId, text });
+//     }
+//   });
 
-  // Handle user disconnection.
-  socket.on('disconnect', () => {
-    const disconnectedUser = users.find(user => user.id === socket.id);
-    if (disconnectedUser) {
-      console.log(`User disconnected: ${socket.id}`);
-      users.splice(users.indexOf(disconnectedUser), 1);
+//   // Handle user disconnection.
+//   socket.on('disconnect', () => {
+//     const disconnectedUser = users.find(user => user.id === socket.id);
+//     if (disconnectedUser) {
+//       console.log(`User disconnected: ${socket.id}`);
+//       users.splice(users.indexOf(disconnectedUser), 1);
 
-      // Notify other users about the disconnection.
-      socket.broadcast.emit('users-changed', users);
-    }
-  });
-});
+//       // Notify other users about the disconnection.
+//       socket.broadcast.emit('users-changed', users);
+//     }
+//   });
+// });
 
 // Create a new user and return the user's ID.
 app.post('/user', async(req, res) => {
@@ -139,10 +139,10 @@ app.post('/messages',async (req, res) => {
   messages[recipientId].push({ senderId, text });
   
   // Send the new message to the recipient if they are online.
-  const recipientSocket = io.sockets.sockets.get(recipientId);
-  if (recipientSocket) {
-    recipientSocket.emit('new-chat-message', { senderId, text });
-  }
+  // const recipientSocket = io.sockets.sockets.get(recipientId);
+  // if (recipientSocket) {
+  //   recipientSocket.emit('new-chat-message', { senderId, text });
+  // }
   await addDoc(collection(db, "chat"), {
     sender:senderId,
     receiver:recipientId,
