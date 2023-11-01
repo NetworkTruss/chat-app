@@ -22,8 +22,9 @@ const formattedTime = currentDateTime.toTimeString().split(' ')[0];
 // import { collection,addDoc } from "firebase/firestore";
 
 const {initializeApp}=require("firebase/app")
-const {getFirestore, setDoc}=require("firebase/firestore")
-const { collection,addDoc ,query, where, getDocs,doc,getDoc}= require("firebase/firestore")
+const {getFirestore, setDoc, orderBy}=require("firebase/firestore")
+const { collection,addDoc ,query, where, getDocs,doc,getDoc}= require("firebase/firestore");
+const { send } = require('process');
 const firebaseConfig = {
   apiKey: "AIzaSyCozgbauL8fMNnPn-H0Q2giQENB4j07pcQ",
   authDomain: "chat-app-ef493.firebaseapp.com",
@@ -104,7 +105,7 @@ app.post('/user', async(req, res) => {
 app.get('/users',async (req, res) => {
     const querySnapshot = await getDocs(collection(db, "users"));
     ans=[]
-querySnapshot.forEach((doc) => {
+    querySnapshot.forEach((doc) => {
   // doc.data() is never undefined for query doc snapshots
   ans.push(doc.data())
 });
@@ -132,8 +133,28 @@ app.get('/messages/:userId', async (req, res) => {
     res.json(ans);
   });
 
+
+app.get('/getmessages', async(req,res)=>{
+  const {senderId, receiverId} = req.body;
+  const q = query(collection(db, "chat"), where("sender", "==", senderId), where("receiver", "==", receiverId));
+  const q2 = query(collection(db, "chat"), where("sender", "==", receiverId), where("receiver", "==", senderId));
+
+  const querySnapshot = await getDocs(q);
+  const querySnapshot2 = await getDocs(q2);
+  ans = []
+  querySnapshot.forEach((doc)=>{
+    ans.push(doc.data())
+  });
+  querySnapshot2.forEach((doc)=>{
+    ans.push(doc.data())
+  });
+  ans.sort((a,b) => a.timestamp - b.timestamp);
+  res.json(ans);
+})
+
+
 // Add a new chat message
-app.post('/messages',async (req, res) => {
+app.post('/message',async (req, res) => {
   const { senderId, recipientId, text } = req.body;
   if (!messages[recipientId]) {
     messages[recipientId] = [];
@@ -150,6 +171,7 @@ app.post('/messages',async (req, res) => {
     receiver:recipientId,
     message:text,
     date: formattedDate,
+    timestamp: currentDateTime,
     time: formattedTime
   });
   res.status(201).json({ message: 'Message sent successfully' });
