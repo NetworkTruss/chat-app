@@ -134,7 +134,7 @@ app.get('/messages/:userId', async (req, res) => {
   });
 
 
-app.get('/getmessages', async(req,res)=>{
+app.post('/getmessages', async(req,res)=>{
   const {senderId, receiverId} = req.body;
   const q = query(collection(db, "chat"), where("sender", "==", senderId), where("receiver", "==", receiverId));
   const q2 = query(collection(db, "chat"), where("sender", "==", receiverId), where("receiver", "==", senderId));
